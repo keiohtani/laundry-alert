@@ -8,7 +8,7 @@ import (
 	// "github.com/aws/aws-sdk-go/service/sns"
 
 	"fmt"
-	// "os"
+	"os"
 	"time"
 )
 
@@ -22,20 +22,20 @@ func main() {
 }
 
 func putRule(client *eventbridge.EventBridge, name *string) {
-    now := time.Now().UTC().Add(time.Minute)
+    now := time.Now().UTC().Add(time.Minute * 70)
     scheduleExperession := now.Format("cron(04 15 2 01 ? 2006)")
-    fmt.Println(scheduleExperession)
     params := eventbridge.PutRuleInput{Name: name, ScheduleExpression: &scheduleExperession}
     _, error := client.PutRule(&params)
     if error != nil {
         fmt.Println(error)
+        os.Exit(1)
     } else {
         fmt.Println("Event scheduled at " + now.String())
     }
 }
 
 func putTargets(client *eventbridge.EventBridge, name *string) {
-    input := "{}"
+    input := "{\"Message\": \"Your laundry is done!\"}"
     arn := "arn:aws:sns:us-east-1:050309447832:test"
     id := "putTargetId"
     target := eventbridge.Target{ Input: &input, Arn: &arn, Id: &id }
@@ -44,5 +44,6 @@ func putTargets(client *eventbridge.EventBridge, name *string) {
     _, error := client.PutTargets(&targetParams)
     if error != nil {
         fmt.Println(error)
+        os.Exit(1)
     }
 }
